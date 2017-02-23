@@ -90,7 +90,7 @@ class GrabzItClient
 	This method specifies the HTML that should be converted into a image.
 
 	html - The HTML to convert into a image.
-	options - A instance of the GrabzItPDFOptions class that defines any special options to use when creating the image.
+	options - A instance of the GrabzItImageOptions class that defines any special options to use when creating the image.
 	*/	
 	public function HTMLToImage($html, $options = null)
 	{
@@ -106,7 +106,7 @@ class GrabzItClient
 	This method specifies a HTML file that should be converted into a image.
 
 	path - The file path of a HTML file to convert into a image.
-	options - A instance of the GrabzItPDFOptions class that defines any special options to use when creating the image.
+	options - A instance of the GrabzItImageOptions class that defines any special options to use when creating the image.
 	*/		
 	public function FileToImage($path, $options = null)
 	{
@@ -221,7 +221,7 @@ class GrabzItClient
 	*/
 	public function Save($callBackURL = null)
 	{
-		if (empty($this->signaturePartOne) && empty($this->signaturePartTwo) && $this->request == null)
+		if ($this->request == null)
 		{
 			throw new GrabzItException("No screenshot parameters have been set.", GrabzItException::PARAMETER_MISSING_PARAMETERS);
 		}
@@ -638,11 +638,16 @@ class GrabzItClient
 			$timeout = array('http' => array('timeout' => $this->connectionTimeout));
 			$context = stream_context_create($timeout);
 			$response = @file_get_contents($url, false, $context);
-
+			
 			if (isset($http_response_header))
 			{
 				$this->checkResponseHeader($http_response_header);
 			}
+			
+			if ($response === FALSE)
+			{
+				throw new GrabzItException("An unknown network error occured.", GrabzItException::NETWORK_GENERAL_ERROR);
+			}			
 
 			return $response;
 		}
