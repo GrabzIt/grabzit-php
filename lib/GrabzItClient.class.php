@@ -223,7 +223,7 @@ class GrabzItClient
 	{
 		if ($this->request == null)
 		{
-			throw new GrabzItException("No screenshot parameters have been set.", GrabzItException::PARAMETER_MISSING_PARAMETERS);
+			throw new GrabzItException("No parameters have been set.", GrabzItException::PARAMETER_MISSING_PARAMETERS);
 		}
 
 		$sig =  $this->encode($this->request->getOptions()->_getSignatureString($this->applicationSecret, $callBackURL, $this->request->getTargetUrl()));
@@ -231,7 +231,7 @@ class GrabzItClient
 		$obj = null;
 		if (!$this->request->isPost())
 		{
-			$obj = $this->getResultObject($this->Get($this->request->getUrl().'?'.http_build_query($this->request->getOptions()->_getParameters($this->applicationKey, $sig, $callBackURL, 'url', $this->request->getData()))));
+			$obj = $this->getResultObject($this->Get($this->request->getUrl().'?'.http_build_query($this->request->getOptions()->_getParameters($this->applicationKey, $sig, $callBackURL, 'url', $this->request->getData()), '', '&')));
 		}
 		else
 		{
@@ -269,7 +269,7 @@ class GrabzItClient
 
 			if (!$status->Cached && !$status->Processing)
 			{
-				throw new GrabzItException("The screenshot did not complete with the error: " . $status->Message, GrabzItException::RENDERING_ERROR);
+				throw new GrabzItException("The capture did not complete with the error: " . $status->Message, GrabzItException::RENDERING_ERROR);
 				break;
 			}
 			else if ($status->Cached)
@@ -277,7 +277,7 @@ class GrabzItClient
 				$result = $this->GetResult($id);
 				if (!$result)
 				{
-					throw new GrabzItException("The screenshot could not be found on GrabzIt.", GrabzItException::RENDERING_MISSING_SCREENSHOT);
+					throw new GrabzItException("The capture could not be found on GrabzIt.", GrabzItException::RENDERING_MISSING_SCREENSHOT);
 					break;
 				}
 
@@ -485,6 +485,11 @@ class GrabzItClient
 		{
 			$this->checkResponseHeader($http_response_header);
 		}
+		
+		if ($response === FALSE)
+		{
+			throw new GrabzItException("An unknown network error occurred.", GrabzItException::NETWORK_GENERAL_ERROR);
+		}		
 
 		return $this->isSuccessful($response);
 	}
@@ -590,7 +595,7 @@ class GrabzItClient
 					'timeout' => $this->connectionTimeout,
 					'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
 					'method'  => 'POST',
-					'content' => http_build_query($parameters)
+					'content' => http_build_query($parameters, '', '&')
 				)
 			);
 
@@ -604,7 +609,7 @@ class GrabzItClient
 			
 			if ($response === FALSE)
 			{
-				throw new GrabzItException("An unknown network error occured.", GrabzItException::NETWORK_GENERAL_ERROR);
+				throw new GrabzItException("An unknown network error occurred.", GrabzItException::NETWORK_GENERAL_ERROR);
 			}
 
 			return $response;
@@ -618,7 +623,7 @@ class GrabzItClient
 			curl_setopt($ch,CURLOPT_URL, $url);
 			curl_setopt($ch,CURLOPT_POST, count($parameters));
 			curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$this->connectionTimeout);
-			curl_setopt($ch,CURLOPT_POSTFIELDS, http_build_query($parameters));
+			curl_setopt($ch,CURLOPT_POSTFIELDS, http_build_query($parameters, '', '&'));
 
 			//execute post
 			$data = curl_exec($ch);
@@ -651,7 +656,7 @@ class GrabzItClient
 			
 			if ($response === FALSE)
 			{
-				throw new GrabzItException("An unknown network error occured.", GrabzItException::NETWORK_GENERAL_ERROR);
+				throw new GrabzItException("An unknown network error occurred.", GrabzItException::NETWORK_GENERAL_ERROR);
 			}			
 
 			return $response;
